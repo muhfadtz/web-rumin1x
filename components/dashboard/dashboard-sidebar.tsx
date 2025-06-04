@@ -12,11 +12,7 @@ const navigation = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    name: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-  },
+
 ]
 
 export function DashboardSidebar() {
@@ -31,8 +27,8 @@ export function DashboardSidebar() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">IoT Hub</h1>
-              <p className="text-xs text-gray-500">Smart Monitoring</p>
+              <h1 className="text-xl font-bold text-gray-900">Rumin1x</h1>
+              <p className="text-xs text-gray-500">Smart Monitoring Farm</p>
             </div>
           </div>
 

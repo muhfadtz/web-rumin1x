@@ -1,11 +1,12 @@
+// components/dashboard/quick-stats.tsx
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSensorData } from "@/hooks/use-sensor-data"
+import { useSensorData } from "@/hooks/use-sensor-data" // Pastikan ini adalah hook yang mengembalikan objek nilai terbaru
 import { TrendingUp, TrendingDown, Activity, Clock, Zap, Wifi } from "lucide-react"
 
 export function QuickStats() {
-  const { data, loading } = useSensorData()
+  const { sensorData: latestValues, loading, error } = useSensorData(); // Mengganti nama 'data' menjadi 'latestValues' agar lebih jelas
 
   if (loading) {
     return (
@@ -25,57 +26,74 @@ export function QuickStats() {
     )
   }
 
-  const now = new Date()
-  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  if (error || !latestValues) { // Tambahkan pemeriksaan jika latestValues null/undefined
+    // Tampilkan pesan error atau placeholder jika data tidak ada atau error
+    return (
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-600">Data Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-red-500">{error ? error : "Quick stats data not available."}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
-  const recentData = data.filter((d) => new Date(d.timestamp) > oneHourAgo)
-  const dailyData = data.filter((d) => new Date(d.timestamp) > oneDayAgo)
+  // Karena 'latestValues' adalah OBJEK nilai terbaru, bukan array historis,
+  // logika di bawah ini TIDAK AKAN BEKERJA seperti yang diharapkan.
+  // Anda perlu sumber data berupa ARRAY HISTORIS untuk statistik ini.
 
-  const totalReadings = data.length
-  const readingsLastHour = recentData.length
-  const uniqueDevices = new Set(data.map((d) => d.deviceId)).size
-  const avgReadingsPerHour = dailyData.length / 24
-
+  // Untuk sementara, agar tidak crash, kita bisa berikan nilai default atau tampilkan pesan.
   const stats = [
     {
-      title: "Total Readings",
-      value: totalReadings.toLocaleString(),
-      description: "All time data",
-      icon: Activity,
+      title: "Temperature",
+      value: latestValues.temperature !== undefined ? `${latestValues.temperature}°C` : "N/A",
+      description: "Current reading",
+      icon: Activity, // Ganti ikon sesuai relevansi
       gradient: "from-gray-700 to-gray-900",
       bgGradient: "from-gray-50 to-gray-100",
       borderColor: "border-gray-300",
     },
     {
-      title: "Last Hour",
-      value: readingsLastHour.toString(),
-      description: "Recent activity",
-      icon: Clock,
+      title: "Humidity",
+      value: latestValues.humidity !== undefined ? `${latestValues.humidity}%` : "N/A",
+      description: "Current reading",
+      icon: Clock, // Ganti ikon
       gradient: "from-gray-600 to-gray-800",
       bgGradient: "from-gray-50 to-gray-100",
       borderColor: "border-gray-300",
-      trend: readingsLastHour > avgReadingsPerHour ? "up" : "down",
     },
     {
-      title: "Active Devices",
-      value: uniqueDevices.toString(),
-      description: "Connected sensors",
-      icon: Wifi,
+      title: "Light Lux",
+      value: latestValues.light_lux !== undefined ? `${latestValues.light_lux.toFixed(2)} lux` : "N/A",
+      description: "Current reading",
+      icon: Wifi, // Ganti ikon
       gradient: "from-gray-800 to-black",
       bgGradient: "from-gray-50 to-gray-100",
       borderColor: "border-gray-300",
     },
     {
-      title: "Avg/Hour",
-      value: avgReadingsPerHour.toFixed(1),
-      description: "24h average",
-      icon: Zap,
+      title: "Gas PPM",
+      value: latestValues.gas_ppm !== undefined ? `${latestValues.gas_ppm} ppm` : "N/A",
+      description: "Current reading",
+      icon: Zap, // Ganti ikon
       gradient: "from-gray-500 to-gray-700",
       bgGradient: "from-gray-50 to-gray-100",
       borderColor: "border-gray-300",
     },
-  ]
+  ];
+
+  // Logika asli Anda untuk recentData, dailyData, dll., tidak bisa digunakan
+  // dengan 'latestValues' yang merupakan objek tunggal.
+  // const now = new Date()
+  // const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+  // const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  // const recentData = latestValues.filter.... // INI AKAN ERROR
 
   return (
     <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
